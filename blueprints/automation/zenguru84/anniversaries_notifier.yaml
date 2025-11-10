@@ -1,10 +1,11 @@
 blueprint:
   name: Anniversaries Notifier
   description: >
-    Daily notification for pinkywafer/Anniversaries sensors.
-    Filters names by a single day offset (0=today, 1=tomorrow, 2, 4, ...).
-    You can set up multiple automations if you want more notifications. 
+    Daily notification for pinkywafer/Anniversaries sensors. <br>
+    Filters names by a single day offset (0=today, 1=tomorrow, 2, 4, ...). <br>
+    You can set up multiple automations if you want to be notified more often. <br>
     Sends a persistent HA notification and optionally multiple mobile pushes.
+    
   domain: automation
   author: zenguru84
   source_url: https://raw.githubusercontent.com/zenguru84/my-ha-toolbox/main/blueprints/automation/zenguru84/anniversaries_notifier.yaml
