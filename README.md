@@ -8,6 +8,8 @@ Reusable **Home Assistant** "things".
 | Name | Domain | Import | Description |
 |------|--------|-----------|-------------|
 | ESPHome Auto Update After Add-on Update | automation | [![Import blueprint to Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://raw.githubusercontent.com/zenguru84/my-ha-toolbox/main/blueprints/automation/zenguru84/esphome_auto_update_after_addon.yaml) | After the ESPHome add-on updates, waits and installs available ESPHome device updates |
+| Anniversaries Notifier | automation | [![Import blueprint to Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://raw.githubusercontent.com/zenguru84/my-ha-toolbox/main/blueprints/automation/zenguru84/anniversaries_notifier.yaml) | Sends a daily notification for [Anniversaries](https://github.com/pinkywafer/Anniversaries) sensors, filtered by a single day offset (e.g., today, tomorrow, in N days). Includes persistent and optional mobile notifications |
+
 
 ---
 
