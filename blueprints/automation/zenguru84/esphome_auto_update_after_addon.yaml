@@ -1,0 +1,78 @@
+blueprint:
+  name: Auto-Update ESPHome devices after ESPHome add-on update
+  description: >
+    When the ESPHome add-on's installed_version changes, wait a bit and then
+    install available firmware updates on all ESPHome devices (their update.* entities).
+    Creates start/end persistent notifications.
+  domain: automation
+  author: zenguru84
+  source_url: https://github.com/zenguru84/my-ha-toolbox/main/blueprints/automation/zenguru84/esphome_auto_update_after_addon.yaml
+
+  input:
+    delay_after_update:
+      name: Delay after add-on update
+      description: Wait before HomeAssistant notifies about new updates for ESPHome Devices.
+      default:
+        hours: 0
+        minutes: 5
+        seconds: 0
+      selector:
+        duration:
+
+    pacing_delay:
+      name: Pacing between installs
+      description: Small delay between device updates to avoid bursts.
+      default:
+        hours: 0
+        minutes: 0
+        seconds: 5
+      selector:
+        duration:
+
+mode: single
+
+trigger:
+  - trigger: state
+    entity_id: update.esphome_update
+    attribute: installed_version
+
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.from_state is not none and trigger.to_state is not none
+        and (trigger.from_state.attributes.installed_version | default('')) !=
+            (trigger.to_state.attributes.installed_version   | default('')) }}
+
+action:
+  - delay: !input delay_after_update
+
+  - variables:
+      to_update: >
+        {{ integration_entities('esphome')
+          | select('match', '^update\\.')
+          | reject('is_state_attr', 'in_progress', true)
+          | select('is_state', 'on')
+          | list }}
+
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ to_update | count > 0 }}"
+        sequence:
+          - action: persistent_notification.create
+            data:
+              title: ESPHome auto-update
+              message: "These ESPHome devices will be updated: {{ to_update | join(', ') }}"
+          - repeat:
+              for_each: "{{ to_update }}"
+              sequence:
+                - action: update.install
+                  target:
+                    entity_id: "{{ repeat.item }}"
+                  data:
+                    backup: true
+                - delay: !input pacing_delay
+          - action: persistent_notification.create
+            data:
+              title: ESPHome auto-update
+              message: "These ESPHome devices were updated: {{ to_update | join(', ') }}"
