@@ -31,12 +31,13 @@ blueprint:
       selector:
         boolean: {}
 
-    mobile_notify_services:
-      name: Mobile notify actions (comma-separated).
-      description: "Example: notify.mobile_app_galaxy_s2o, notify.mobile_app_pixel_7"
-      default: ""
+    mobile_device:
+      name: Mobile App device (optional)
+      description: "Select the device registered via the Mobile App integration."
+      default: null
       selector:
-        text: {}
+        device:
+          integration: mobile_app
 
 mode: single
 max_exceeded: silent
@@ -48,13 +49,23 @@ trigger:
 variables:
   day_offset: !input day_offset
   mobile_push_enabled: !input mobile_push_enabled
-  mobile_notify_services: !input mobile_notify_services
+  mobile_device: !input mobile_device
 
-  # Split comma/space separated services into a clean list
-  mobile_services_list: >
-    {% set raw = (mobile_notify_services | string).replace(',', ' ') %}
-    {% set items = raw.split() %}
-    {{ items }}
+  # Derive notify service from Mobile App device name: notify.mobile_app_<slug>
+  mobile_service_slug: >
+    {% if mobile_device %}
+      {% set name = device_attr(mobile_device, 'name') | lower %}
+      {% set slug = name
+          | replace(' ', '_')
+          | replace("'", '_')
+          | regex_replace('[^a-z0-9_]', '') %}
+      {{ 'mobile_app_' ~ slug }}
+    {% else %}{% endif %}
+
+  mobile_notify_service: >
+    {% if mobile_service_slug %}
+      {{ 'notify.' ~ mobile_service_slug }}
+    {% else %}{% endif %}
 
   # All Anniversaries sensors from the integration
   all_entities: >
@@ -107,12 +118,10 @@ action:
 
   # Optional: send to multiple mobile notify services
   - condition: template
-    value_template: "{{ mobile_push_enabled and (mobile_services_list | length > 0) }}"
+    value_template: >
+      {{ mobile_push_enabled }}
 
-  - repeat:
-      for_each: "{{ mobile_services_list }}"
-      sequence:
-        - action: "{{ repeat.item }}"
-          data:
-            title: "{{ final_title }}"
-            message: "{{ final_message }}"
+  - action: "{{ mobile_notify_service }}"
+    data:
+      title: "{{ final_title }}"
+      message: "{{ final_message }}"
