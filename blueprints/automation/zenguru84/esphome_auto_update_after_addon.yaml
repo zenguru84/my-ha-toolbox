@@ -52,8 +52,7 @@ action:
           | select('match', '^update\\.')
           | reject('is_state_attr', 'in_progress', true)
           | select('is_state', 'on')
-          | list }}
-          
+          | list }}       
   - if:
       - condition: template
         value_template: "{{ to_update | count > 0 }}"
@@ -62,7 +61,6 @@ action:
         data:
           title: ESPHome auto-update
           message: "Do not restart Home Assisstant! These ESPHome devices will be updated: {{ to_update | join(', ') }}"
-        
       - repeat:
           for_each: "{{ to_update }}"
           sequence:
@@ -70,10 +68,8 @@ action:
               target:
                 entity_id: "{{ repeat.item }}"
               data: {}
-              
             - delay: !input pacing_delay
       - action: persistent_notification.create
         data:
           title: ESPHome auto-update
           message: "These ESPHome devices were updated: {{ to_update | join(', ') }}"
-        
