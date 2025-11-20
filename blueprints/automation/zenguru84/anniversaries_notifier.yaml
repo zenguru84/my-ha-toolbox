@@ -51,7 +51,6 @@ variables:
   mobile_push_enabled: !input mobile_push_enabled
   mobile_device: !input mobile_device
 
-  # Derive notify service from Mobile App device name: notify.mobile_app_<slug>
   mobile_service_slug: >
     {% if mobile_device %}
       {% set name = device_attr(mobile_device, 'name') | lower %}
@@ -67,12 +66,10 @@ variables:
       {{ 'notify.' ~ mobile_service_slug }}
     {% else %}{% endif %}
 
-  # All Anniversaries sensors from the integration
   all_entities: >
     {% set all = integration_entities('anniversaries') | list %}
     {{ all | select('match', '^sensor\\.') | list | sort }}
 
-  # Names matched for the selected offset (namespace accumulator; friendly_name only)
   matched_names: >
     {% set ns = namespace(items=[]) %}
     {% for e in all_entities %}
@@ -87,19 +84,17 @@ variables:
     {% endfor %}
     {{ ns.items | sort }}
 
-  # Title with proper wording (Today / Tomorrow / In X Days)
   final_title: >
     {% set d = day_offset | int %}
     {% if d == 0 %}
-      {% set title = "Birthday(s) Today" %}
+      {% set title = "Anniversaries Today" %}
     {% elif d == 1 %}
-      {% set title = "Birthday(s) Tomorrow" %}
+      {% set title = "Anniversaries Tomorrow" %}
     {% else %}
-      {% set title = "Birthday(s) In " ~ d ~ " Days" %}
+      {% set title = "Anniversaries In " ~ d ~ " Days" %}
     {% endif %}
     {{ title }}
 
-  # Message: one name per line
   final_message: >
     {% set count = matched_names | length %}
     {% if count > 0 %}
@@ -107,7 +102,6 @@ variables:
     {% else %}{% endif %}
 
 action:
-  # Send persistent notification only if we have matches
   - condition: template
     value_template: "{{ matched_names | length > 0 }}"
 
@@ -116,7 +110,6 @@ action:
       title: "{{ final_title }}"
       message: "{{ final_message }}"
 
-  # Optional: send to multiple mobile notify services
   - condition: template
     value_template: >
       {{ mobile_push_enabled }}
